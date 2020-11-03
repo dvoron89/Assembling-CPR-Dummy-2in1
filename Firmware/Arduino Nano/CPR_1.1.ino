@@ -11,18 +11,9 @@ SoftwareSerial ESPSerial (4, 5);
 
 double SonarDuration;
 double SonarDistance;
-double SonarDistanceTraveled;
-double SonarSuccessMax = 60;
-int SonarDistancePercent;
 double SonarInstallHeight;
 
-double PressureMin;
-double PressureMax;
 double PressureNormal;
-double MaxPressure = 0;
-double PressureSuccesMin = 12.0;
-double PressureSuccessMax = 15.0;
-int PressurePercent;
 
 String StartLine = "_";
 String EndLine = ";";
@@ -71,20 +62,13 @@ double SonarCheck()
   digitalWrite(TriggerPin, LOW);
 
   SonarDuration = pulseIn(EchoPin, HIGH);
-  SonarDistance = (SonarDuration / 2) / 2.91;
-  SonarDistanceTraveled = SonarInstallHeight - SonarDistance;
+  SonarDistance = SonarInstallHeight - (SonarDuration / 2) / 2.91;
 
-  if (SonarDistanceTraveled < 0)
+  if (SonarDistance < 0)
   {
-    SonarDistanceTraveled = 0;
+    SonarDistance = 0;
   }
 
-  SonarDistancePercent = SonarDistanceTraveled / SonarSuccessMax * 100;
-
-  if (SonarDistancePercent > 100)
-  {
-    SonarDistancePercent = 100;
-  }
   return (SonarDistance);
 }
 
@@ -92,19 +76,15 @@ double PressureCheck()
 {
   double CurrentPressure;
   double DeltaPressure;
+  
   CurrentPressure = getPressure();
   DeltaPressure = CurrentPressure - PressureNormal;
+  
   if (DeltaPressure < 0)
   {
     DeltaPressure = 0;
   }
 
-  PressurePercent = DeltaPressure / PressureSuccessMax * 100;
-
-  if (PressurePercent > 100)
-  {
-    PressurePercent = 100;
-  }
   return (DeltaPressure);
 }
 
@@ -116,7 +96,6 @@ double getPressure()
   status = Pressure.startTemperature();
   if (status != 0)
   {
-    // ожидание замера температуры
     delay(status);
     status = Pressure.getTemperature(T);
     if (status != 0)
@@ -124,7 +103,6 @@ double getPressure()
       status = Pressure.startPressure(3);
       if (status != 0)
       {
-        // ожидание замера давления
         delay(status);
         status = Pressure.getPressure(P, T);
         if (status != 0)
